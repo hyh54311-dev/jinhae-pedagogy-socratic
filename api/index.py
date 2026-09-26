@@ -139,7 +139,7 @@ def log_to_google_sheet_bg(student_id: str, topic: str, turn: int, user_msg: str
 
 @app.get("/api/health")
 async def health_check():
-    return {"status": "ok", "service": "jinhae-pedagogy-socratic-api", "model": "gemini-1.5-flash"}
+    return {"status": "ok", "service": "jinhae-pedagogy-socratic-api", "model": "gemini-3.8-flash"}
 
 @app.get("/api/topics")
 async def get_topics():
@@ -157,7 +157,7 @@ async def chat_endpoint(req: ChatRequest, background_tasks: BackgroundTasks):
     )
     
     model = genai.GenerativeModel(
-        model_name="gemini-1.5-flash",
+        model_name="gemini-3.8-flash",
         system_instruction=system_instruction,
         generation_config={
             "temperature": 0.7,
