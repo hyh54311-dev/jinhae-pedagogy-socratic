@@ -4,6 +4,7 @@ from datetime import datetime, timezone, timedelta
 import json
 import random
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from google.oauth2 import service_account
@@ -262,3 +263,20 @@ async def chat_endpoint(req: ChatRequest):
         "is_final": (req.turn >= 12),
         "topic": req.topic
     }
+
+# --- 로컬 개발 서버용 정적 파일 서빙 (Vercel 배포 시에는 vercel.json에 의해 자동 처리됨) ---
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+@app.get("/")
+async def serve_index():
+    index_file = os.path.join(BASE_DIR, "index.html")
+    if os.path.exists(index_file):
+        return FileResponse(index_file)
+    raise HTTPException(status_code=404, detail="index.html not found")
+
+@app.get("/{file_name:path}")
+async def serve_static(file_name: str):
+    file_path = os.path.join(BASE_DIR, file_name)
+    if os.path.exists(file_path) and os.path.isfile(file_path):
+        return FileResponse(file_path)
+    raise HTTPException(status_code=404, detail="File not found")
