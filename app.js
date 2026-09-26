@@ -21,7 +21,7 @@ const STORAGE_KEY = "jinhae_socratic_session_v2";
 
 let currentStudent = "";
 let currentTopic = "topic1";
-let currentPin = "2026";
+let currentPin = "";
 let currentTurn = 1;
 const MAX_TURNS = 12;
 let chatHistory = [];
@@ -88,7 +88,7 @@ function restoreSessionState() {
 
     currentStudent = state.student;
     currentTopic = state.topic || "topic1";
-    currentPin = state.pin || "2026";
+    currentPin = state.pin || "";
     currentTurn = state.turn || 1;
     chatHistory = state.history || [];
     aiQuestions = state.questions || [];
@@ -131,7 +131,16 @@ startForm.addEventListener("submit", (e) => {
   const pin = classPinInput.value.trim();
   currentTopic = topicSelect.value;
 
-  if (!rawId || !pin) return;
+  if (!rawId) {
+    alert("학번 또는 관리번호를 입력하세요.");
+    studentNameInput.focus();
+    return;
+  }
+  if (!pin) {
+    alert("칠판에 안내된 4자리 수업 코드를 직접 입력하세요.");
+    classPinInput.focus();
+    return;
+  }
 
   currentStudent = rawId;
   currentPin = pin;
@@ -346,6 +355,10 @@ function showCompletionAlert() {
       상단 <strong>[📝 학습지 도우미]</strong>를 눌러 핵심 내용을 확인하고,<br>
       종이 학습지 뒷면 <strong>⑥ [다듬어진 나의 최종 주장]</strong>을 손글씨로 완성하십시오!
     </p>
+    <div style="margin-top: 14px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+      <button type="button" class="btn-sub" onclick="downloadChatHistory()" style="background:#059669; color:#fff; border-color:#047857;">📥 대화 전체 다운로드 (TXT)</button>
+      <button type="button" class="btn-sub" onclick="copyAllChatHistory()">📋 대화 전체 복사</button>
+    </div>
   `;
   chatArea.appendChild(completionBox);
   scrollToBottom();
@@ -373,21 +386,59 @@ function updateHelperModalContent() {
     helperQSelect.selectedIndex = helperQSelect.options.length - 1;
     snippetHardest.textContent = helperQSelect.value;
   }
-
-  // 3. 문항 ③: 주제별 실증 학술 근거 표시
-  snippetEvidence.textContent = TOPIC_EVIDENCE_MAP[currentTopic] || "해당 주제의 학술 근거를 불러오는 중입니다.";
 }
 
 helperQSelect.addEventListener("change", () => {
   snippetHardest.textContent = helperQSelect.value;
 });
 
+// 대화 전체 텍스트 다운로드 (세특 이중 안전장치)
+function downloadChatHistory() {
+  if (chatHistory.length === 0) {
+    alert("저장할 대화 내역이 없습니다.");
+    return;
+  }
+  let content = `[진해고등학교 3학년 교육학 2차시 소크라틱 토론 기록]\n`;
+  content += `학번/관리번호: ${currentStudent}\n`;
+  content += `토론 대주제: ${TOPIC_NAMES[currentTopic]}\n`;
+  content += `진행 일시: ${new Date().toLocaleString()}\n`;
+  content += `=======================================================\n\n`;
+
+  chatHistory.forEach((msg, idx) => {
+    const speaker = msg.role === "user" ? `[나 (학생)]` : `[소크라틱 AI 튜터]`;
+    content += `${speaker}\n${msg.content}\n\n`;
+  });
+
+  const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `교육학토론_${currentStudent}_${currentTopic}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// 대화 전체 클립보드 복사
+function copyAllChatHistory() {
+  if (chatHistory.length === 0) {
+    alert("복사할 대화 내역이 없습니다.");
+    return;
+  }
+  let content = `[진해고 3학년 교육학 2차시 토론] ${currentStudent} | ${TOPIC_NAMES[currentTopic]}\n\n`;
+  chatHistory.forEach((msg) => {
+    const speaker = msg.role === "user" ? `[학생]` : `[AI]`;
+    content += `${speaker}: ${msg.content}\n\n`;
+  });
+  copyToClipboard(content, "대화 기록 전체가 클립보드에 복사되었습니다!");
+}
+
 // 복사 헬퍼 함수
 function copyToClipboard(text, msg) {
   navigator.clipboard.writeText(text).then(() => {
     alert(msg);
   }).catch(() => {
-    // 대체 복사
     const tempInput = document.createElement("textarea");
     tempInput.value = text;
     document.body.appendChild(tempInput);
@@ -406,13 +457,15 @@ btnCopyQ2.addEventListener("click", () => {
   copyToClipboard(snippetStuck.textContent.trim(), "문항 ② 서술틀이 복사되었습니다!");
 });
 
-btnCopyQ3.addEventListener("click", () => {
-  copyToClipboard(snippetEvidence.textContent.trim(), "문항 ③ 학술 근거가 복사되었습니다!");
-});
-
 btnCopyQ6.addEventListener("click", () => {
   copyToClipboard(snippetFinalFrame.textContent.trim(), "문항 ⑥ 최종 주장 문장틀이 복사되었습니다!");
 });
+
+const btnBackupTxt = document.getElementById("btn-backup-txt");
+if (btnBackupTxt) btnBackupTxt.addEventListener("click", downloadChatHistory);
+
+const btnBackupCopy = document.getElementById("btn-backup-copy");
+if (btnBackupCopy) btnBackupCopy.addEventListener("click", copyAllChatHistory);
 
 btnHelper.addEventListener("click", () => {
   updateHelperModalContent();

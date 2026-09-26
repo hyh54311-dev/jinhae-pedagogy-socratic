@@ -23,8 +23,8 @@
         <form id="start-form">
           <div class="form-group">
             <label for="class-pin">수업 참여 코드 (PIN 4자리)</label>
-            <input type="password" id="class-pin" placeholder="교사 안내 PIN (예: 2026)" value="2026" required>
-            <small class="field-hint">교사가 칠판에 안내한 4자리 수업 코드를 입력하세요.</small>
+            <input type="password" id="class-pin" placeholder="교사가 칠판에 안내한 4자리 코드 입력" required autocomplete="off">
+            <small class="field-hint">칠판에 적힌 4자리 수업 코드를 직접 입력하세요.</small>
           </div>
 
           <div class="form-group">
@@ -141,14 +141,15 @@
             <button type="button" class="btn-copy" id="btn-copy-q2">문항 ② 서술틀 복사</button>
           </div>
 
-          <!-- 문항 ③ 새롭게 얻은 학술적 근거 / 반박 통계 -->
+          <!-- 문항 ③ 새롭게 알게 된 학술적 근거 / 반박 통계 (개별화 직접 작성) -->
           <div class="helper-item">
             <div class="helper-item-title">
               <span class="q-badge">문항 ③</span>
-              <strong>새롭게 얻은 학술적 근거 및 실증 통계:</strong>
+              <strong>새롭게 알게 된 근거 (학습지 뒷면 직접 작성):</strong>
             </div>
-            <div class="snippet-box" id="snippet-evidence">주제를 선택하면 핵심 학술 근거가 표시됩니다.</div>
-            <button type="button" class="btn-copy" id="btn-copy-q3">문항 ③ 근거 복사</button>
+            <div class="snippet-box" style="background:#ffffff; color:#475569; font-style:italic;">
+              ※ AI와의 1:1 토론 과정에서 새롭게 알게 된 구체적인 학술 개념이나 실증 통계를 종이 학습지에 직접 손글씨로 적어보세요.
+            </div>
           </div>
 
           <!-- 문항 ⑥ [다듬어진 나의 최종 주장] 필수 문장틀 -->
@@ -161,6 +162,21 @@
               "1차시의 주장에서 (                          )는 그대로 유지했다. 다만 (                          )는 수정·보완했다. 그 이유는 AI와의 문답을 통해 (                          )라는 점을 새롭게 깨달았기 때문이다."
             </div>
             <button type="button" class="btn-copy" id="btn-copy-q6">문항 ⑥ 문장틀 복사</button>
+          </div>
+
+          <!-- 대화 전체 백업 저장 (세특 이중 안전장치) -->
+          <div class="helper-item" style="background: #f0fdf4; border-color: #bbf7d0;">
+            <div class="helper-item-title">
+              <span class="q-badge" style="background:#16a34a;">백업</span>
+              <strong style="color:#166534;">대화 기록 전체 백업 (세특 근거 보존용):</strong>
+            </div>
+            <p style="font-size:11px; color:#15803d; margin-bottom:8px;">
+              토론을 마친 후 아래 버튼을 눌러 전체 문답을 텍스트 파일로 저장하거나 클립보드에 복사해 두면 안전합니다.
+            </p>
+            <div style="display:flex; gap:8px;">
+              <button type="button" class="btn-copy" id="btn-backup-txt" style="border-color:#16a34a; color:#16a34a;">📥 대화 전체 다운로드 (TXT)</button>
+              <button type="button" class="btn-copy" id="btn-backup-copy" style="border-color:#16a34a; color:#16a34a;">📋 대화 전체 복사</button>
+            </div>
           </div>
         </div>
       </div>
