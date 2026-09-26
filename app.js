@@ -26,6 +26,7 @@ let currentTurn = 1;
 const MAX_TURNS = 12;
 let chatHistory = [];
 let aiQuestions = [];
+let syncWarningShown = false;
 
 // DOM 요소
 const startModal = document.getElementById("start-modal");
@@ -215,6 +216,12 @@ chatForm.addEventListener("submit", async (e) => {
     chatHistory.push({ role: "model", content: data.reply });
     aiQuestions.push(data.reply);
     updateHelperModalContent();
+
+    // 구글 시트 저장 실패/지연 감지 시 백업 다운로드 권장 알림 (최초 1회)
+    if (data.logged === false && !syncWarningShown) {
+      syncWarningShown = true;
+      appendSystemMessage("💡 [안내] 교사용 클라우드 자동 저장이 지연되었습니다. 12턴 대화 종료 후 화면의 [📥 대화 전체 다운로드] 버튼을 꼭 눌러 대화를 보관해주세요.");
+    }
 
     // 턴 수 증가 및 프로그레스 업데이트
     currentTurn++;

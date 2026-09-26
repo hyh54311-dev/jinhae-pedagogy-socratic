@@ -254,9 +254,12 @@ async def chat_endpoint(req: ChatRequest):
         except Exception as e:
             err_str = str(e)
             if "429" in err_str or "quota" in err_str.lower() or "resource" in err_str.lower():
-                wait_time = (2 ** attempt) + random.uniform(0.2, 0.6)
-                print(f"[Rate Limit 429] 재시도 대기: {wait_time:.2f}초 (시도 {attempt+1}/{max_retries})")
-                await asyncio.sleep(wait_time)
+                if attempt < max_retries - 1:
+                    wait_time = (2 ** attempt) + random.uniform(0.2, 0.6)
+                    print(f"[Rate Limit 429] 재시도 대기: {wait_time:.2f}초 (시도 {attempt+1}/{max_retries})")
+                    await asyncio.sleep(wait_time)
+                else:
+                    print(f"[Rate Limit 429] 최대 재시도({max_retries}회) 도달")
             else:
                 print(f"Gemini API 에러: {e}")
                 raise HTTPException(status_code=500, detail=f"AI 응답 생성 실패: {err_str}")
