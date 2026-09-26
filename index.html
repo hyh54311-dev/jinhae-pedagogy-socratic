@@ -11,19 +11,26 @@
 </head>
 <body>
   <div id="app">
-    <!-- 1. 시작 모달 (인적사항 및 주제 선택) -->
+    <!-- 1. 시작 모달 (인적사항, PIN 및 주제 선택) -->
     <div id="start-modal" class="modal-overlay">
       <div class="modal-card">
         <div class="modal-header">
           <div class="school-badge">진해고등학교 3학년 교육학과정</div>
-          <h2>소크라틱 1:1 AI 토론 튜터</h2>
+          <h2>소크라틱 1:1 AI 토론 튜터 v2.0</h2>
           <p class="modal-desc">2차시: AI의 날카로운 반박에 맞서 내 논리를 고도화하는 시간입니다.</p>
         </div>
 
         <form id="start-form">
           <div class="form-group">
-            <label for="student-name">학생 인적사항 (반, 번호, 성명 또는 관리번호)</label>
-            <input type="text" id="student-name" placeholder="예: 3반 14번 홍길동 (또는 관리번호 01)" required>
+            <label for="class-pin">수업 참여 코드 (PIN 4자리)</label>
+            <input type="password" id="class-pin" placeholder="교사 안내 PIN (예: 2026)" value="2026" required>
+            <small class="field-hint">교사가 칠판에 안내한 4자리 수업 코드를 입력하세요.</small>
+          </div>
+
+          <div class="form-group">
+            <label for="student-name">학번 또는 관리번호 <span class="privacy-alert">(실명 입력 금지)</span></label>
+            <input type="text" id="student-name" placeholder="예: 30105 (또는 관리번호 07)" required>
+            <small class="field-hint">※ 학생 개인정보 보호를 위해 실명은 절대 입력하지 마세요.</small>
           </div>
 
           <div class="form-group">
@@ -36,11 +43,12 @@
           </div>
 
           <div class="rules-box">
-            <strong>⚠️ 토론 진행 3대 수칙:</strong>
+            <strong>⚠️ 토론 진행 4대 수칙:</strong>
             <ul>
               <li><strong>Zero-Spoiling:</strong> AI는 정답이나 최종 주장을 대신 써주지 않습니다.</li>
               <li><strong>12턴 제한:</strong> 총 12번의 문답 이내에 자신의 논리를 완성해야 합니다.</li>
-              <li><strong>학습지 기록:</strong> 가장 까다로웠던 질문과 바뀐 생각을 학습지에 적으세요.</li>
+              <li><strong>세션 자동 보존:</strong> 화면이 잠기거나 새로고침되어도 대화가 복원됩니다.</li>
+              <li><strong>학습지 기록:</strong> 상단 도우미를 눌러 학습지 뒷면 각 문항을 완성하세요.</li>
             </ul>
           </div>
 
@@ -56,9 +64,12 @@
         <div class="header-top">
           <div class="header-info">
             <span class="topic-tag" id="current-topic-tag">1번 주제</span>
-            <span class="student-tag" id="current-student-tag">3반 14번 홍길동</span>
+            <span class="student-tag" id="current-student-tag">30105</span>
           </div>
-          <button id="btn-helper" class="btn-sub">📝 학습지 도우미</button>
+          <div class="header-actions">
+            <button id="btn-helper" class="btn-sub">📝 학습지 도우미</button>
+            <button id="btn-reset-chat" class="btn-sub-reset" title="토론 초기화">초기화</button>
+          </div>
         </div>
 
         <div class="turn-progress-wrap">
@@ -83,7 +94,10 @@
           ⏳ 생각을 정리하는 중입니다... (<span id="cooldown-sec">3</span>초 뒤 재전송 가능)
         </div>
         <form id="chat-form" class="input-form">
-          <textarea id="user-input" placeholder="AI의 반박에 맞서 당신의 논거와 생각을 적어보세요..." rows="2" required></textarea>
+          <div class="textarea-wrap">
+            <textarea id="user-input" placeholder="AI의 반박에 맞서 당신의 논거와 생각을 적어보세요..." rows="2" maxlength="500" required></textarea>
+            <div class="char-counter"><span id="char-count">0</span> / 500자</div>
+          </div>
           <button type="submit" id="btn-send" class="btn-send">
             <span>전송</span>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
@@ -92,7 +106,7 @@
       </footer>
     </div>
 
-    <!-- 3. 학습지 작성 도우미 모달 -->
+    <!-- 3. 학습지 작성 도우미 모달 (학습지 뒷면 3개 문항 완벽 지원) -->
     <div id="helper-modal" class="modal-overlay hidden">
       <div class="modal-card helper-card">
         <div class="modal-header">
@@ -100,24 +114,53 @@
           <button id="btn-close-helper" class="btn-close">✕</button>
         </div>
         <div class="helper-content">
-          <p class="helper-guide">AI와의 문답을 통해 느낀 점을 종이 학습지 뒷면 각 문항에 손글씨로 옮겨 적으세요.</p>
+          <p class="helper-guide">AI와의 문답을 토대로 종이 학습지 뒷면 각 문항을 손글씨로 완성하세요. 필요한 문장은 아래 버튼을 눌러 복사할 수 있습니다.</p>
           
+          <!-- 문항 ① AI가 던진 질문 중 가장 까다로웠던 질문 -->
           <div class="helper-item">
-            <strong>문항 ① AI가 던진 질문 중 가장 까다로웠던 질문:</strong>
-            <div class="snippet-box" id="snippet-hardest">아직 대화가 충분히 진행되지 않았습니다.</div>
-            <button class="btn-copy" onclick="copySnippet('snippet-hardest')">내용 복사</button>
-          </div>
-
-          <div class="helper-item">
-            <strong>문항 ② 내 논리가 처음으로 막히거나 모순을 느낀 지점:</strong>
-            <p class="sub-desc">AI의 질문에 바로 반박하지 못하고 멈칫했던 순간을 회상해 적어보세요.</p>
-          </div>
-
-          <div class="helper-item">
-            <strong>문항 ⑥ [다듬어진 나의 최종 주장] 필수 문장틀:</strong>
-            <div class="frame-highlight">
-              "1차시의 주장에서 ( &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; )는 그대로 유지했다. 다만 ( &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; )는 수정·보완했다. 그 이유는..."
+            <div class="helper-item-title">
+              <span class="q-badge">문항 ①</span>
+              <strong>AI가 던진 질문 중 가장 까다로웠던 질문 선택:</strong>
             </div>
+            <select id="helper-q-select" class="helper-select">
+              <option value="">대화를 진행하면 질문 목록이 나타납니다.</option>
+            </select>
+            <div class="snippet-box" id="snippet-hardest">질문을 선택하세요.</div>
+            <button type="button" class="btn-copy" id="btn-copy-q1">문항 ① 질문 복사</button>
+          </div>
+
+          <!-- 문항 ② 내 논리가 처음으로 막히거나 모순을 느낀 지점 -->
+          <div class="helper-item">
+            <div class="helper-item-title">
+              <span class="q-badge">문항 ②</span>
+              <strong>내 논리가 처음으로 막히거나 모순을 느낀 지점 서술틀:</strong>
+            </div>
+            <div class="snippet-box" id="snippet-stuck">
+              AI가 던진 질문에 기존 근거만으로는 반박하기 어려워 멈칫했던 순간: "처음에는 단순히 [내 주장]이라고만 생각했는데, AI가 [까다로웠던 지점]을 지적했을 때 내 논리의 빈틈을 느꼈다."
+            </div>
+            <button type="button" class="btn-copy" id="btn-copy-q2">문항 ② 서술틀 복사</button>
+          </div>
+
+          <!-- 문항 ③ 새롭게 얻은 학술적 근거 / 반박 통계 -->
+          <div class="helper-item">
+            <div class="helper-item-title">
+              <span class="q-badge">문항 ③</span>
+              <strong>새롭게 얻은 학술적 근거 및 실증 통계:</strong>
+            </div>
+            <div class="snippet-box" id="snippet-evidence">주제를 선택하면 핵심 학술 근거가 표시됩니다.</div>
+            <button type="button" class="btn-copy" id="btn-copy-q3">문항 ③ 근거 복사</button>
+          </div>
+
+          <!-- 문항 ⑥ [다듬어진 나의 최종 주장] 필수 문장틀 -->
+          <div class="helper-item">
+            <div class="helper-item-title">
+              <span class="q-badge">문항 ⑥</span>
+              <strong>[다듬어진 나의 최종 주장] 필수 문장틀:</strong>
+            </div>
+            <div class="frame-highlight" id="snippet-final-frame">
+              "1차시의 주장에서 (                          )는 그대로 유지했다. 다만 (                          )는 수정·보완했다. 그 이유는 AI와의 문답을 통해 (                          )라는 점을 새롭게 깨달았기 때문이다."
+            </div>
+            <button type="button" class="btn-copy" id="btn-copy-q6">문항 ⑥ 문장틀 복사</button>
           </div>
         </div>
       </div>
