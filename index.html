@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>진해고 고3 교육학 소크라틱 1:1 토론 튜터 (2차시)</title>
+  <link rel="stylesheet" href="index.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="app">
+    <!-- 1. 시작 모달 (인적사항 및 주제 선택) -->
+    <div id="start-modal" class="modal-overlay">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div class="school-badge">진해고등학교 3학년 교육학과정</div>
+          <h2>소크라틱 1:1 AI 토론 튜터</h2>
+          <p class="modal-desc">2차시: AI의 날카로운 반박에 맞서 내 논리를 고도화하는 시간입니다.</p>
+        </div>
+
+        <form id="start-form">
+          <div class="form-group">
+            <label for="student-name">학생 인적사항 (반, 번호, 성명 또는 관리번호)</label>
+            <input type="text" id="student-name" placeholder="예: 3반 14번 홍길동 (또는 관리번호 01)" required>
+          </div>
+
+          <div class="form-group">
+            <label for="topic-select">탐구 대주제 선택</label>
+            <select id="topic-select" required>
+              <option value="topic1">1번 주제: 보상과 학습동기 (외재적 보상 vs 내재적 동기)</option>
+              <option value="topic2">2번 주제: 학교와 불평등 (계층이동 사다리 vs 불평등 재생산)</option>
+              <option value="topic3">3번 주제: AI와 미래교육 (인공지능 튜터 vs 인간 교사)</option>
+            </select>
+          </div>
+
+          <div class="rules-box">
+            <strong>⚠️ 토론 진행 3대 수칙:</strong>
+            <ul>
+              <li><strong>Zero-Spoiling:</strong> AI는 정답이나 최종 주장을 대신 써주지 않습니다.</li>
+              <li><strong>12턴 제한:</strong> 총 12번의 문답 이내에 자신의 논리를 완성해야 합니다.</li>
+              <li><strong>학습지 기록:</strong> 가장 까다로웠던 질문과 바뀐 생각을 학습지에 적으세요.</li>
+            </ul>
+          </div>
+
+          <button type="submit" class="btn-start">토론 시작하기 (Start Debate)</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- 2. 메인 토론 채팅 뷰 -->
+    <div id="main-view" class="main-container hidden">
+      <!-- 상단 헤더 & 12턴 프로그레스 바 -->
+      <header class="app-header">
+        <div class="header-top">
+          <div class="header-info">
+            <span class="topic-tag" id="current-topic-tag">1번 주제</span>
+            <span class="student-tag" id="current-student-tag">3반 14번 홍길동</span>
+          </div>
+          <button id="btn-helper" class="btn-sub">📝 학습지 도우미</button>
+        </div>
+
+        <div class="turn-progress-wrap">
+          <div class="turn-meta">
+            <span class="turn-title">대화 진행 현황 (최대 12턴)</span>
+            <span class="turn-counter"><strong id="turn-now">1</strong> / 12 턴</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-bar" id="progress-bar" style="width: 8.33%;"></div>
+          </div>
+        </div>
+      </header>
+
+      <!-- 메시지 목록 영역 -->
+      <main class="chat-area" id="chat-area">
+        <!-- 메시지들이 동적으로 삽입됩니다 -->
+      </main>
+
+      <!-- 하단 입력창 & 쿨다운 알림 -->
+      <footer class="input-area">
+        <div id="cooldown-banner" class="cooldown-banner hidden">
+          ⏳ 생각을 정리하는 중입니다... (<span id="cooldown-sec">3</span>초 뒤 재전송 가능)
+        </div>
+        <form id="chat-form" class="input-form">
+          <textarea id="user-input" placeholder="AI의 반박에 맞서 당신의 논거와 생각을 적어보세요..." rows="2" required></textarea>
+          <button type="submit" id="btn-send" class="btn-send">
+            <span>전송</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+          </button>
+        </form>
+      </footer>
+    </div>
+
+    <!-- 3. 학습지 작성 도우미 모달 -->
+    <div id="helper-modal" class="modal-overlay hidden">
+      <div class="modal-card helper-card">
+        <div class="modal-header">
+          <h3>📝 2차시 학습지 뒷면 작성 도우미</h3>
+          <button id="btn-close-helper" class="btn-close">✕</button>
+        </div>
+        <div class="helper-content">
+          <p class="helper-guide">AI와의 문답을 통해 느낀 점을 종이 학습지 뒷면 각 문항에 손글씨로 옮겨 적으세요.</p>
+          
+          <div class="helper-item">
+            <strong>문항 ① AI가 던진 질문 중 가장 까다로웠던 질문:</strong>
+            <div class="snippet-box" id="snippet-hardest">아직 대화가 충분히 진행되지 않았습니다.</div>
+            <button class="btn-copy" onclick="copySnippet('snippet-hardest')">내용 복사</button>
+          </div>
+
+          <div class="helper-item">
+            <strong>문항 ② 내 논리가 처음으로 막히거나 모순을 느낀 지점:</strong>
+            <p class="sub-desc">AI의 질문에 바로 반박하지 못하고 멈칫했던 순간을 회상해 적어보세요.</p>
+          </div>
+
+          <div class="helper-item">
+            <strong>문항 ⑥ [다듬어진 나의 최종 주장] 필수 문장틀:</strong>
+            <div class="frame-highlight">
+              "1차시의 주장에서 ( &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; )는 그대로 유지했다. 다만 ( &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; )는 수정·보완했다. 그 이유는..."
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
