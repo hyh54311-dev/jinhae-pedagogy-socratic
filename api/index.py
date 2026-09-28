@@ -156,13 +156,23 @@ def log_to_google_sheet_sync(student_id: str, topic: str, turn: int, user_msg: s
         kst_now = (datetime.now(timezone.utc) + timedelta(hours=9)).strftime('%Y-%m-%d %H:%M:%S')
         values = [[kst_now, student_id, topic, turn, user_msg, ai_msg]]
         body = {'values': values}
-        service.spreadsheets().values().append(
-            spreadsheetId=SPREADSHEET_ID,
-            range='대화로그!A:F',
-            valueInputOption='RAW',
-            insertDataOption='INSERT_ROWS',
-            body=body
-        ).execute()
+        try:
+            service.spreadsheets().values().append(
+                spreadsheetId=SPREADSHEET_ID,
+                range='대화로그!A:F',
+                valueInputOption='RAW',
+                insertDataOption='INSERT_ROWS',
+                body=body
+            ).execute()
+        except Exception as tab_err:
+            # '대화로그' 탭이 없거나 기본 탭(Sheet1 등)일 경우 첫 번째 탭(A:F)으로 자동 기록
+            service.spreadsheets().values().append(
+                spreadsheetId=SPREADSHEET_ID,
+                range='A:F',
+                valueInputOption='RAW',
+                insertDataOption='INSERT_ROWS',
+                body=body
+            ).execute()
         print(f"[Sheets Log] {student_id} Turn {turn} 저장 성공")
         return True
     except Exception as e:
